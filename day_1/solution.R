@@ -50,6 +50,51 @@ solve_day1 <- function(){
 
 }
 
+### Crappy base R version
+crappy_solution <- function(){
+
+  input <- read.table("C:/Users/isaac/Documents/AoC/2024/day_1/input.txt",
+                      header = FALSE)
+
+
+  left_values <- input[,1]
+  right_values <- input[,2]
+
+  left_values <- sort(left_values)
+  right_values <- sort(right_values)
+
+  difference = 0
+  for(i in 1:1000){
+
+    difference <- difference + abs(left_values[i] - right_values[i])
+
+  }
+
+
+  counts <- rep(0, times = 1000)
+  similarity <- 0
+
+  for(i in 1:1000){
+
+    for(j in 1:1000){
+
+      if(left_values[i] == right_values[j]){
+        counts[i] <- counts[i] + 1
+      }
+
+    }
+
+    similarity <- similarity + (left_values[i]*counts[i])
+
+  }
+
+  return(
+    list(similarity = similarity,
+         distance = distance)
+  )
+
+}
+
 
 ### base R version as function
 baseR_solution <- function(){
@@ -80,16 +125,18 @@ baseR_solution <- function(){
 ### tidyverse solution as functoin
 tidyverse_solution <- function(){
 
-  # input <- read_delim("C:/Users/isaac/Documents/AoC/2024/day_1/input.txt",
-  #                     col_names = FALSE,
-  #                     trim_ws = TRUE) %>%
-  #   dplyr::select(-X2, -X3)
-  input <- fread("C:/Users/isaac/Documents/AoC/2024/day_1/input.txt") %>%
-    as_tibble() %>%
-    dplyr::rename(
-      X1 = V1,
-      X4 = V2
-    )
+
+  input <- read_delim("C:/Users/isaac/Documents/AoC/2024/day_1/input.txt",
+                      delim = "   ",
+                      col_names = FALSE,
+                      show_col_types = FALSE)
+
+  # input <- fread("C:/Users/isaac/Documents/AoC/2024/day_1/input.txt") %>%
+  #   as_tibble() %>%
+  #   dplyr::rename(
+  #     X1 = V1,
+  #     X2 = V2
+  #   )
 
 
   left_values <- input %>%
@@ -100,8 +147,8 @@ tidyverse_solution <- function(){
 
 
   right_values <- input %>%
-    dplyr::arrange(X4) %>%
-    dplyr::select(X4) %>%
+    dplyr::arrange(X2) %>%
+    dplyr::select(X2) %>%
     unlist() %>%
     unname()
 
@@ -109,9 +156,9 @@ tidyverse_solution <- function(){
   difference <- sum(abs(left_values - right_values))
 
   right_counts <- input %>%
-    dplyr::count(X4) %>%
+    dplyr::count(X2) %>%
     dplyr::rename(
-      X1 = X4
+      X1 = X2
     )
 
   similarity_score <- input %>%
@@ -235,8 +282,11 @@ similarity_score <- input %>%
   solve_day1(),
   baseR_solution(),
   tidyverse_solution(),
+  crappy_solution(),
   check = FALSE
 ))
 # data.table: 2.6 ms
 # baseR: 8.5 ms
 # tidyverse: 74 ms!! Down to 13.6 if I swap in fread()
+#   proper read_delim() delimiter put it at 33.46 will full tidyverse
+# crappy loops: 32.45 ms
