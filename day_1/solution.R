@@ -288,5 +288,7 @@ similarity_score <- input %>%
 # data.table: 2.6 ms
 # baseR: 8.5 ms
 # tidyverse: 74 ms!! Down to 13.6 if I swap in fread()
-#   proper read_delim() delimiter put it at 33.46 will full tidyverse
+#   proper read_delim() delimiter put it at 33.46 with full tidyverse
+#   I think using inner join strategy is slowing things down in this implementation
+#   because dplyr's joins are so much shittier than data.table's.
 # crappy loops: 32.45 ms
