@@ -4,9 +4,7 @@
 
 # Load dependencies ------------------------------------------------------------
 
-library(data.table)
 library(dplyr)
-library(readr)
 library(stringr)
 
 
