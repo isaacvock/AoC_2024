@@ -291,3 +291,5 @@ cycles <- future_map2(possible_sites$row, possible_sites$col,
              return(as.numeric(visited$cycle))
            },
            .progress = TRUE)
+
+sum(cycles %>% unlist())
