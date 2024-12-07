@@ -3,7 +3,9 @@
 
 
 # Dive in ----------------------------------------------------------------------
-
+library(dplyr)
+library(furrr)
+library(purrr)
 
 ##### FUNCTIONS #####
 
@@ -218,41 +220,45 @@ sum(visited$places_visited > 0)
 
 ##### PART 2 #####
 
-starting_pos <- find_start(test_map)
-
-num_cycles <- 0
-for(i in 1:nrow(test_map)){
-  for(j in 1:ncol(test_map)){
-
-    if(test_map[i, j] == "."){
-
-      new_map <- test_map
-      new_map[i, j] <- "#"
-      visited <- trace_path(new_map, starting_pos$row_start, starting_pos$col_start)
-
-      num_cycles <- num_cycles + as.numeric(visited$cycle)
-
-
-    }
-
-  }
-}
+# starting_pos <- find_start(test_map)
+#
+# num_cycles <- 0
+# for(i in 1:nrow(test_map)){
+#   for(j in 1:ncol(test_map)){
+#
+#     if(test_map[i, j] == "."){
+#
+#       new_map <- test_map
+#       new_map[i, j] <- "#"
+#       visited <- trace_path(new_map, starting_pos$row_start, starting_pos$col_start)
+#
+#       num_cycles <- num_cycles + as.numeric(visited$cycle)
+#
+#
+#     }
+#
+#   }
+# }
 
 
 
 starting_pos <- find_start(input_map)
 
 num_cycles <- 0
-for(i in 1:nrow(input_map)){
-  for(j in 1:ncol(input_map)){
+possible_sites <- tibble()
 
-    if(input_map[i, j] == "."){
+visited <- visited$places_visited
 
-      new_map <- input_map
-      new_map[i, j] <- "#"
-      visited <- trace_path(new_map, starting_pos$row_start, starting_pos$col_start)
+for(i in 1:nrow(visited)){
+  for(j in 1:ncol(visited)){
 
-      num_cycles <- num_cycles + as.numeric(visited$cycle)
+    if(visited[i, j] > 0 & !(i == starting_pos$row_start & j == starting_pos$col_start)){
+
+      possible_sites <- bind_rows(possible_sites,
+                                  tibble(
+                                    row = i,
+                                    col =j
+                                  ))
 
 
     }
@@ -260,7 +266,28 @@ for(i in 1:nrow(input_map)){
   }
 }
 
+# for(s in 1:nrow(possible_sites)){
+#
+#   new_map <- input_map
+#   new_map[possible_sites$row[s], possible_sites$col[s]] <- "#"
+#   visited <- trace_path(new_map, starting_pos$row_start, starting_pos$col_start)
+#
+#   num_cycles <- num_cycles + as.numeric(visited$cycle)
+#
+#   print(paste0((s*100) / nrow(possible_sites), "% done"))
+#
+# }
+
+
 # Oof, this takes too much time
 num_cycles
 
-
+plan(multisession, workers = 8)
+cycles <- future_map2(possible_sites$row, possible_sites$col,
+           function(x, y){
+             new_map <- input_map
+             new_map[x, y] <- "#"
+             visited <- trace_path(new_map, starting_pos$row_start, starting_pos$col_start)
+             return(as.numeric(visited$cycle))
+           },
+           .progress = TRUE)
